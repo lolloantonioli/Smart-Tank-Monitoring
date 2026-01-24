@@ -9,7 +9,7 @@
     <style>
         body { background-color: #f4f6f9; }
         .card { margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .status-badge { font-size: 1.2em; padding: 10px; border-radius: 5px; color: white; display: block; text-align: center;}
+        .status-badge { font-size: 1.2em; padding: 10px; border-radius: 5px; color: white; display: block; text-align: center; font-weight: bold;}
         .bg-auto { background-color: #28a745; } /* Green */
         .bg-manual { background-color: #ffc107; color: black; } /* Yellow */
         .bg-alarm { background-color: #dc3545; } /* Red */
@@ -25,9 +25,9 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card p-3">
-                <h4 class="text-center">System State</h4>
+                <h4 class="text-center">Stato del Sistema</h4>
                 <div id="system-state-badge" class="status-badge bg-not-avail">
-                    CONNECTING...
+                    ATTESA DATI...
                 </div>
             </div>
         </div>
@@ -36,20 +36,20 @@
     <div class="row">
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header bg-primary text-white">Controls (WCS)</div>
+                <div class="card-header bg-primary text-white">Controlli (WCS)</div>
                 <div class="card-body">
                     <div class="mb-4 text-center">
-                        <h5>Current Mode</h5>
+                        <h5>Modalità</h5>
                         <button id="btn-switch-mode" class="btn btn-outline-primary w-100" onclick="toggleMode()">
-                            Switch to MANUAL
+                            Passa a MANUAL
                         </button>
                     </div>
                     <hr>
                     <div class="mb-2">
-                        <h5>Valve Opening</h5>
+                        <h5>Apertura Valvola</h5>
                         <h2 class="text-center text-primary"><span id="valve-value">0</span>%</h2>
                         <input type="range" class="form-range" id="valve-slider" min="0" max="100" disabled onchange="updateValve(this.value)">
-                        <small class="text-muted">Slider active only in MANUAL mode</small>
+                        <small class="text-muted">Slider attivo solo in MANUAL</small>
                     </div>
                 </div>
             </div>
@@ -57,7 +57,7 @@
 
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header bg-info text-white">Rainwater Level History (TMS)</div>
+                <div class="card-header bg-info text-white">Livello Acqua (TMS)</div>
                 <div class="card-body">
                     <canvas id="levelChart"></canvas>
                 </div>
@@ -67,14 +67,14 @@
 </div>
 
 <script>
-    // --- CONFIGURAZIONE GRAFICO ---
+    // --- CONFIG GRAFICO ---
     const ctx = document.getElementById('levelChart').getContext('2d');
     const levelChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: [], // Tempo
+            labels: [], 
             datasets: [{
-                label: 'Water Level (m)',
+                label: 'Livello Acqua (cm)',
                 data: [],
                 borderColor: 'rgba(54, 162, 235, 1)',
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
@@ -84,18 +84,15 @@
             }]
         },
         options: {
-            scales: {
-                y: { beginAtZero: true, max: 100 } // Assumiamo max livello 100 per demo
-            },
-            animation: false // Disabilita animazione per aggiornamenti fluidi
+            scales: { y: { beginAtZero: true, max: 100 } },
+            animation: false
         }
     });
 
-    // --- LOGICA DI AGGIORNAMENTO ---
-    const MAX_DATA_POINTS = 20; // N measurements
+    const MAX_DATA_POINTS = 20;
     let isConnected = false;
 
-    // Funzione chiamata periodicamente per prendere i dati dal CUS
+    // --- LOOP PRINCIPALE ---
     async function fetchData() {
         try {
             const response = await fetch('/api/data');
@@ -112,47 +109,52 @@
     }
 
     function updateUI(data) {
-        // 1. Aggiorna Badge Stato
-        setSystemState(data.state);
+        // 1. STATO (Usa "mode" invece di "state")
+        setSystemState(data.mode);
 
-        // 2. Aggiorna Valvola
-        document.getElementById('valve-value').innerText = data.valve;
+        // 2. VALVOLA (Usa "valveOpening" invece di "valve")
+        document.getElementById('valve-value').innerText = data.valveOpening;
         const slider = document.getElementById('valve-slider');
-        slider.value = data.valve;
-
-        // 3. Gestione Controlli (Abilita slider solo in manuale)
-        const btn = document.getElementById('btn-switch-mode');
         
-        if (data.state === 'MANUAL') {
+        // Evita che lo slider salti mentre lo trascini
+        if(document.activeElement !== slider) {
+            slider.value = data.valveOpening;
+        }
+
+        // 3. BOTTONI
+        const btn = document.getElementById('btn-switch-mode');
+        if (data.mode === 'MANUAL') {
             slider.disabled = false;
-            btn.innerText = "Switch to AUTOMATIC";
+            btn.innerText = "Passa a AUTOMATIC";
             btn.className = "btn btn-warning w-100";
         } else {
             slider.disabled = true;
-            btn.innerText = "Switch to MANUAL";
+            btn.innerText = "Passa a MANUAL";
             btn.className = "btn btn-outline-primary w-100";
         }
 
-        // 4. Aggiorna Grafico
-        addDataToChart(new Date().toLocaleTimeString(), data.level);
+        // 4. GRAFICO (Usa "currentLevel" invece di "level")
+        addDataToChart(new Date().toLocaleTimeString(), data.currentLevel);
     }
 
-    function setSystemState(state) {
+    function setSystemState(mode) {
         const badge = document.getElementById('system-state-badge');
-        badge.innerText = state;
-        badge.className = "status-badge"; // Reset classi
+        
+        // Gestione caso null o undefined
+        if (!mode) mode = "NOT AVAILABLE";
 
-        if (state === 'AUTOMATIC') badge.classList.add('bg-auto');
-        else if (state === 'MANUAL') badge.classList.add('bg-manual');
-        else if (state === 'UNCONNECTED') badge.classList.add('bg-unconnected');
+        badge.innerText = mode;
+        badge.className = "status-badge"; 
+
+        if (mode === 'AUTOMATIC') badge.classList.add('bg-auto');
+        else if (mode === 'MANUAL') badge.classList.add('bg-manual');
+        else if (mode === 'UNCONNECTED') badge.classList.add('bg-unconnected');
         else badge.classList.add('bg-not-avail');
     }
 
-    function addDataToChart(label, data) {
+    function addDataToChart(label, val) {
         levelChart.data.labels.push(label);
-        levelChart.data.datasets[0].data.push(data);
-
-        // Mantieni solo gli ultimi N punti
+        levelChart.data.datasets[0].data.push(val);
         if (levelChart.data.labels.length > MAX_DATA_POINTS) {
             levelChart.data.labels.shift();
             levelChart.data.datasets[0].data.shift();
@@ -160,25 +162,24 @@
         levelChart.update();
     }
 
-    // --- INTERAZIONE UTENTE ---
+    // --- AZIONI UTENTE ---
     async function toggleMode() {
-        if(!isConnected) return;
         await fetch('/api/mode', { method: 'POST' });
-        fetchData(); // Aggiorna subito
+        // Non serve ricaricare fetchData, ci pensa il loop
     }
 
     async function updateValve(val) {
-        if(!isConnected) return;
+        // Nota: Qui mandiamo "valve" perché l'API Java si aspetta "valve" nel JSON in ingresso
         await fetch('/api/valve', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ valve: val })
+            body: JSON.stringify({ valve: parseInt(val) })
         });
         document.getElementById('valve-value').innerText = val;
     }
 
-    // Avvia il polling ogni 1 secondo
-    setInterval(fetchData, 1000);
+    // Aggiorna ogni 500ms
+    setInterval(fetchData, 500);
 </script>
 
 </body>
