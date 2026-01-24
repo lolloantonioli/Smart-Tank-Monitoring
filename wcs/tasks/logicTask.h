@@ -1,16 +1,15 @@
 #ifndef __LOGIC_TASK__
 #define __LOGIC_TASK__
 
-#include "constants.h"
+#include "../context.h"
+#include "../kernel/task.h"
 
 class LogicTask : public Task {
   private:
-    State currentState;
-    Display* display;
-    Button* button;
+    Context* context;
   public:
-    LogicTask();
+    LogicTask(Context* ctx);
     void tick();
-}
+};
 
 #endif

@@ -7,5 +7,6 @@ ValveTask::ValveTask(Valve* valve, Context* context) {
 }
 
 void ValveTask::tick() {
-  
+  int level = context->getValveLevel();
+  valve->setPosition(level);
 }

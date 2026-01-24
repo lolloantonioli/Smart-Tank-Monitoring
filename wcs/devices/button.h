@@ -8,7 +8,6 @@ class Button {
     int pin;
   public:
     Button(int p);
-    void init();
     bool isPressed();
 };
 

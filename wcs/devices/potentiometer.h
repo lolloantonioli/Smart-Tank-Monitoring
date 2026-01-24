@@ -6,7 +6,7 @@ class Potentiometer {
     int pin;
   public:
     Potentiometer(int p);
-    void init();
-}
+    int getValue();
+};
 
 #endif

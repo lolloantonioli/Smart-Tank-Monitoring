@@ -9,9 +9,8 @@ class Display {
     LiquidCrystal_I2C* lcd;
   public:
     Display(uint8_t addr, uint8_t cols, uint8_t rows);
-    
-    void init();
     void clear();
+    void showStatus(const char* state, int level);
 };
 
 #endif

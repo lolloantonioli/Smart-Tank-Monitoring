@@ -1,8 +1,6 @@
 #include "button.h"
 
-Button::Button(int p) : pin(p) {}
-
-void Button::init() {
+Button::Button(int p) : pin(p) {
     pinMode(pin, INPUT);
 }
 

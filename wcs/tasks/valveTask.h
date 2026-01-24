@@ -1,9 +1,9 @@
 #ifndef __VALVE_TASK__
 #define __VALVE_TASK__
 
-#include "task.h"
-#include "valve.h"
-#include "context.h"
+#include "../kernel/task.h"
+#include "../devices/valve.h"
+#include "../context.h"
 
 class ValveTask : public Task {
   private:
