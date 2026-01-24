@@ -11,6 +11,6 @@ class CommTask : public Task {
   public:
     CommTask(Context* ctx);
     void tick();
-}
+};
 
 #endif

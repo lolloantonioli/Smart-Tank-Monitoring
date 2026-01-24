@@ -12,6 +12,6 @@ class ValveTask : public Task {
   public:
     ValveTask(Valve* valve, Context* context);
     void tick();
-}
+};
 
 #endif

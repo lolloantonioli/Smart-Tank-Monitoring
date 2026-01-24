@@ -9,7 +9,7 @@ Context::Context() {
   valveLevel = 0;
 }
 
-void setManualLevel(int level) { 
+void Context::setManualLevel(int level) { 
   if (level < 0) {
     level = 0;
   } 
@@ -19,52 +19,52 @@ void setManualLevel(int level) {
   this->manualLevel = level; 
 }
 
-int getManualLevel() { 
+int Context::getManualLevel() { 
   return manualLevel; 
 }
 
-void setButtonPressed(bool pressed) {
+void Context::setButtonPressed(bool pressed) {
   this->buttonPressed = pressed;
 }
 
-bool isButtonPressed() {
+bool Context::isButtonPressed() {
   return buttonPressed;
 }
 
-bool fetchButtonPressed() {
+bool Context::fetchButtonPressed() {
   bool temp = buttonPressed;
   buttonPressed = false;
   return temp;
 }
 
-void setRemoteAutoLevel(int level) { 
+void Context::setRemoteAutoLevel(int level) { 
   // Qui potremmo anche aggiungere controlli di range
   this->remoteAutoLevel = level; 
 }
 
-int getRemoteAutoLevel() {
+int Context::getRemoteAutoLevel() {
   return remoteAutoLevel;
 }
 
-void setRemoteUnconnected(bool status) {
+void Context::setRemoteUnconnected(bool status) {
   this->remoteUnconnected = status;
 }
-bool isRemoteUnconnected() {
+bool Context::isRemoteUnconnected() {
   return remoteUnconnected;
 }
 
-void setSystemState(WCSState state) {
+void Context::setSystemState(WCSState state) {
   this->systemState = state;
 }
 
-WCSState getSystemState() {
+WCSState Context::getSystemState() {
   return systemState;
 }
 
-void setValveLevel(int level) {
+void Context::setValveLevel(int level) {
   this->valveLevel = level;
 }
 
-int getValveLevel() {
+int Context::getValveLevel() {
   return valveLevel;
 }

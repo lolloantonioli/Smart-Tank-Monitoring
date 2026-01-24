@@ -10,8 +10,8 @@ class DisplayTask : public Task {
     Display* display;
     Context* context;
   public:
-    DisplayTask();
+    DisplayTask(Display* d, Context* c);
     void tick();
-}
+};
 
 #endif

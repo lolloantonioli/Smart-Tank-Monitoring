@@ -15,6 +15,6 @@ class ManualInputTask : public Task {
   public:
     ManualInputTask(Button* btn, Potentiometer* p, Context* ctx);
     void tick();
-}
+};
 
 #endif

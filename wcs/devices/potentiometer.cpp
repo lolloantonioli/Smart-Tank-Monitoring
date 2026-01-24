@@ -1,6 +1,6 @@
 #include "potentiometer.h"
 
-class Potentiometer::Potentiometer(int p) : pin(p) {
+Potentiometer::Potentiometer(int p) : pin(p) {
     pinMode(pin, INPUT);
 }
 

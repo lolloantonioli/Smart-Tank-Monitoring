@@ -9,6 +9,6 @@ enum WCSState {
     AUTOMATIC,
     MANUAL,
     UNCONNECTED
-}
+};
 
 #endif

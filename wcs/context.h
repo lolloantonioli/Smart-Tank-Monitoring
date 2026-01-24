@@ -1,6 +1,8 @@
 #ifndef __CONTEXT__
 #define __CONTEXT__
 
+#include "constants.h"
+
 class Context {
   private:
     int manualLevel;
@@ -24,4 +26,6 @@ class Context {
     WCSState getSystemState();
     void setValveLevel(int level);
     int getValveLevel();
-}
+};
+
+#endif
