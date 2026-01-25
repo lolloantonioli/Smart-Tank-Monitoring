@@ -4,13 +4,15 @@
 #include "../kernel/task.h"
 #include "../devices/sonar.h"
 #include <Arduino.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
 
 class SonarTask : public Task {
   private:
     Sonar* sonar;
-    volatile float* distRef;
+    QueueHandle_t distanceQueue;
   public:
-    SonarTask(Sonar* s, volatile float* c);
+    SonarTask(Sonar* s, QueueHandle_t distanceQueue);
     void tick();
 };
 

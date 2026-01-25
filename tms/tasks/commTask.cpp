@@ -1,7 +1,7 @@
 #include "commTask.h"
 
-CommTask::CommTask(volatile float* d, volatile TMSState* s) 
-    : distRef(d), stateRef(s) {
+CommTask::CommTask(QueueHandle_t q, volatile TMSState* s) 
+    : distanceQueue(q), stateRef(s) {
     client.setClient(espClient);
     client.setServer(mqtt_server, 1883);
 }
@@ -25,14 +25,11 @@ void CommTask::checkConnection() {
 
 void CommTask::tick() {
     checkConnection();
-    
     // Se siamo connessi, inviamo i dati
     if (*stateRef) {
         client.loop(); 
-        
-        // Lettura diretta della variabile aggiornata dal Sonar
-        float level = *distRef;
-        
+        float level;
+        xQueuePeek(distanceQueue, &level, 0);
         char msg[20];
         snprintf(msg, 20, "%.2f", level);
         client.publish(topic, msg);

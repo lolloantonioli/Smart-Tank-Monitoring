@@ -3,12 +3,14 @@
 
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
 #include "../kernel/task.h"
 #include "../constants.h"
 
 class CommTask : public Task {
   private:
-    volatile float* distRef;      // Da leggere
+    QueueHandle_t distanceQueue;  // Da leggere
     volatile TMSState* stateRef;  // Da scrivere
     
     WiFiClient espClient;
@@ -22,7 +24,7 @@ class CommTask : public Task {
     void checkConnection();
 
   public:
-    CommTask(volatile float* d, volatile TMSState* s);
+    CommTask(QueueHandle_t q, volatile TMSState* s);
     void tick();
 };
 

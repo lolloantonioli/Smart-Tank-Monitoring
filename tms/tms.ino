@@ -1,6 +1,9 @@
 #include "tms/constants.h"
 #include "tms/kernel/scheduler.h"
 
+#include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
+
 // Devices
 #include "tms/devices/led.h"
 #include "tms/devices/sonar.h"
@@ -13,7 +16,7 @@
 // --- DATI CONDIVISI (Shared Memory) ---
 // volatile dice al compilatore: "Attenzione, questo valore può cambiare 
 // improvvisamente (perché toccato dall'altro Core), rileggilo sempre dalla RAM!"
-volatile float currentDistance = 0.0;
+QueueHandle_t distanceQueue;
 volatile TMSState systemState = NOT_WORKING;
 
 // --- Schedulers ---
@@ -34,8 +37,8 @@ void CommLoop(void * parameter) {
   schedComm->init(100); 
   
   // Passiamo i puntatori alle variabili globali
-  tComm = new CommTask(&currentDistance, &systemState);
-  tComm->init(500); // Esegue ogni 500ms
+  tComm = new CommTask(distanceQueue, &systemState);
+  tComm->init(FREQUENCE);
   
   schedComm->addTask(tComm);
   
@@ -48,6 +51,7 @@ void CommLoop(void * parameter) {
 
 void setup() {
   Serial.begin(115200);
+  distanceQueue = xQueueCreate(1, sizeof(float));
 
   // 1. Init Hardware
   lGreen = new Led(GREEN_LED_PIN);
@@ -59,8 +63,8 @@ void setup() {
   schedApp->init(50);
 
   // Il Sonar scrive nella variabile distance (puntatore)
-  tSonar = new SonarTask(sonar, &currentDistance);
-  tSonar->init(200); 
+  tSonar = new SonarTask(sonar, distanceQueue);
+  tSonar->init(FREQUENCE); 
 
   // Il LED legge la variabile isConnected (puntatore)
   tLed = new LedTask(lGreen, lRed, &systemState);

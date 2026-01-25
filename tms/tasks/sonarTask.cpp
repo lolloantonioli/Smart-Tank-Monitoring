@@ -1,7 +1,9 @@
 #include "sonarTask.h"
 
-SonarTask::SonarTask(Sonar* s, volatile float* d) : sonar(s), distRef(d) {}
+SonarTask::SonarTask(Sonar* s, QueueHandle_t q) 
+    : sonar(s), distanceQueue(q) {}
 
 void SonarTask::tick() {
-    *distRef = sonar->getDistanceCM();
+    float distance = sonar->getDistanceCM();
+    xQueueOverwrite(distanceQueue, &distance);
 }
