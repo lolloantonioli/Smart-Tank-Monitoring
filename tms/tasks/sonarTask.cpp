@@ -1,8 +1,7 @@
 #include "sonarTask.h"
 
-SonarTask::SonarTask(Sonar* s, Context* c) : sonar(s), context(c) {}
+SonarTask::SonarTask(Sonar* s, volatile float* d) : sonar(s), distRef(d) {}
 
 void SonarTask::tick() {
-    float dist = sonar->getDistanceCM();
-    context->setDistance(dist);
+    *distRef = sonar->getDistanceCM();
 }

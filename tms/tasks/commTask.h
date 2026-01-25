@@ -4,23 +4,25 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include "../kernel/task.h"
-#include "../context.h"
+#include "../constants.h"
 
 class CommTask : public Task {
   private:
-    Context* context;
+    volatile float* distRef;      // Da leggere
+    volatile TMSState* stateRef;  // Da scrivere
+    
     WiFiClient espClient;
     PubSubClient client;
     
-    const char* ssid = "YOUR_WIFI_SSID";
-    const char* password = "YOUR_WIFI_PASS";
-    const char* mqtt_server = "BROKER_IP_ADDRESS"; // Es. 192.168.1.10
+    const char* ssid = "YOUR_SSID";
+    const char* password = "YOUR_PASS";
+    const char* mqtt_server = "BROKER_IP"; 
     const char* topic = "tms/waterlevel";
 
-    void reconnect();
+    void checkConnection();
 
   public:
-    CommTask(Context* ctx);
+    CommTask(volatile float* d, volatile TMSState* s);
     void tick();
 };
 

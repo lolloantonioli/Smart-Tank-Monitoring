@@ -3,14 +3,14 @@
 
 #include "../kernel/task.h"
 #include "../devices/sonar.h"
-#include "../context.h"
+#include <Arduino.h>
 
 class SonarTask : public Task {
   private:
     Sonar* sonar;
-    Context* context;
+    volatile float* distRef;
   public:
-    SonarTask(Sonar* s, Context* c);
+    SonarTask(Sonar* s, volatile float* c);
     void tick();
 };
 

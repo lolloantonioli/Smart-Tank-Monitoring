@@ -3,15 +3,15 @@
 
 #include "../kernel/task.h"
 #include "../devices/led.h"
-#include "../context.h"
+#include "../constants.h"
 
 class LedTask : public Task {
   private:
     Led* greenLed;
     Led* redLed;
-    Context* context;
+    volatile TMSState* stateRef;
   public:
-    LedTask(Led* green, Led* red, Context* ctx);
+    LedTask(Led* green, Led* red, volatile TMSState* s);
     void tick();
 };
 

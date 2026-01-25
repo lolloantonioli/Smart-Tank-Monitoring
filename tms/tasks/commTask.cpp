@@ -1,48 +1,40 @@
 #include "commTask.h"
 
-CommTask::CommTask(Context* ctx) : context(ctx) {
+CommTask::CommTask(volatile float* d, volatile TMSState* s) 
+    : distRef(d), stateRef(s) {
     client.setClient(espClient);
     client.setServer(mqtt_server, 1883);
 }
 
-void CommTask::reconnect() {
-    // Tentativo di connessione WiFi se necessario
+void CommTask::checkConnection() {
     if (WiFi.status() != WL_CONNECTED) {
+        *stateRef = NOT_WORKING; 
         WiFi.begin(ssid, password);
-        // Non facciamo while() bloccante qui, controlliamo al prossimo tick
-        // o facciamo un tentativo rapido. Per semplicità, controlliamo stato.
-    }
-    
-    // Aggiorna stato WiFi nel context
-    bool wifiStatus = (WiFi.status() == WL_CONNECTED);
-    context->setWifiConnected(wifiStatus);
-
-    if (wifiStatus && !client.connected()) {
-        // Tenta connessione MQTT
-        if (client.connect("TMS_Client")) {
-            // Connesso
-        } 
+    } else {
+        if (!client.connected()) {
+             *stateRef = NOT_WORKING;
+             String clientId = "TMS-" + String(random(0xffff), HEX);
+             if (client.connect(clientId.c_str())) {
+                 *stateRef = WORKING;
+             }
+        } else {
+            *stateRef = WORKING;
+        }
     }
 }
 
 void CommTask::tick() {
-    // 1. Gestione Connessione
-    reconnect();
+    checkConnection();
     
-    bool mqttStatus = client.connected();
-    context->setMqttConnected(mqttStatus);
-    
-    if (mqttStatus) {
-        client.loop(); // Keep-alive MQTT
+    // Se siamo connessi, inviamo i dati
+    if (*stateRef) {
+        client.loop(); 
         
-        // 2. Invio Dati
-        // Inviamo solo se connessi.
-        float level = context->getDistance();
+        // Lettura diretta della variabile aggiornata dal Sonar
+        float level = *distRef;
         
-        // Formattiamo il payload. Esempio semplice stringa numerica o JSON
         char msg[20];
         snprintf(msg, 20, "%.2f", level);
-        
         client.publish(topic, msg);
     }
 }

@@ -1,12 +1,10 @@
 #include "ledTask.h"
 
-LedTask::LedTask(Led* green, Led* red, Context* ctx) 
-    : greenLed(green), redLed(red), context(ctx) {}
+LedTask::LedTask(Led* green, Led* red, volatile TMSState* s) 
+    : greenLed(green), redLed(red), stateRef(s) {}
 
 void LedTask::tick() {
-    TMSState state = context->getSystemState();
-
-    switch (state) {
+    switch (*stateRef) {
         case WORKING:
             greenLed->on();
             redLed->off();
