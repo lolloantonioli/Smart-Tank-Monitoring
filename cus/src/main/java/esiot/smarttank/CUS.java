@@ -16,7 +16,7 @@ public class CUS {
 
     // CONFIGURAZIONE ---
     private static final String BROKER = "tcp://broker.mqtt-dashboard.com:1883";
-    private static final String TOPIC_TMS = "esiot-2025/level"; 
+    private static final String TOPIC_TMS = "tms/waterlevel"; 
     
     // TEMPO E LIVELLI ACQUA
     private static final double L1 = 60.0;
