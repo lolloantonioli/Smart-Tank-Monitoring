@@ -8,6 +8,7 @@
 class CommTask : public Task {
   private:
     Context* context;
+    WCSState lastSentState;
   public:
     CommTask(Context* ctx);
     void tick();

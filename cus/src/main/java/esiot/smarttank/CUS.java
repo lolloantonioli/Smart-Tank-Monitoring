@@ -80,21 +80,24 @@ public class CUS {
                 public void deliveryComplete(IMqttDeliveryToken t) {}
                 public void messageArrived(String t, MqttMessage m) {
                     try {
-                        Map data = new Gson().fromJson(new String(m.getPayload()), Map.class);
-                        if(data.containsKey("level")) {
-                            Object val = data.get("level");
-                            if(val instanceof Number) {
-                                state.currentLevel = ((Number) val).doubleValue();
-                                state.lastMsgTime = System.currentTimeMillis();
-                            }
+                        // MODIFICA: Nessun JSON. Leggiamo la stringa "xx.xx" direttamente.
+                        String payload = new String(m.getPayload()).trim();
+                        // Gestione base errore parse
+                        if (!payload.isEmpty()) {
+                            state.currentLevel = Double.parseDouble(payload);
+                            state.lastMsgTime = System.currentTimeMillis();
                         }
-                    } catch (Exception e) {}
+                    } catch (Exception e) {
+                        System.err.println("MQTT Parse Error: " + e.getMessage());
+                    }
                 }
             });
             client.connect();
             client.subscribe(TOPIC_TMS);
             System.out.println("MQTT: Subscribed");
-        } catch (MqttException e) { e.printStackTrace(); }
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void logicLoop() {
