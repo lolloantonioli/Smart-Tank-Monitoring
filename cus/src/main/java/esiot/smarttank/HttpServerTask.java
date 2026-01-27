@@ -52,8 +52,13 @@ public class HttpServerTask {
         // API MODE
         server.createContext("/api/mode", exchange -> {
             if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
-                if (CUS.state.mode.equals("AUTOMATIC")) CUS.state.mode = "MANUAL";
-                else CUS.state.mode = "AUTOMATIC";
+                if (CUS.state.mode.equals("AUTOMATIC")) {
+                    CUS.state.mode = "MANUAL";
+                    CUS.serialComm.sendMode("MANUAL"); 
+                } else {
+                    CUS.state.mode = "AUTOMATIC";
+                    CUS.serialComm.sendMode("AUTOMATIC");
+                }
                 exchange.sendResponseHeaders(200, 0);
             }
             exchange.close();

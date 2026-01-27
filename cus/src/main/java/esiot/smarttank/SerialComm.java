@@ -46,4 +46,11 @@ public class SerialComm {
             port.writeBytes(cmd.getBytes(), cmd.length());
         }
     }
+
+    public void sendMode(String mode) {
+        if (port != null && port.isOpen()) {
+            String cmd = (mode.equals("MANUAL")) ? "MOD:MANUAL\n" : "MOD:AUTO\n";
+            port.writeBytes(cmd.getBytes(), cmd.length());
+        }
+    }
 }

@@ -12,6 +12,10 @@ void CommTask::tick() {
         if (msg.startsWith("VALVE:")) {
             int val = msg.substring(6).toInt();
             context->setRemoteAutoLevel(val);
+        } else if (msg.equals("CMD:MANUAL")) {
+            context->setSystemState(MANUAL);
+        } else if (msg.equals("CMD:AUTO")) {
+            context->setSystemState(AUTOMATIC);
         }
     }
     WCSState currentState = context->getSystemState();

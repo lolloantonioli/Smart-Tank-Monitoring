@@ -1,6 +1,5 @@
 package esiot.smarttank;
 
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -9,8 +8,6 @@ import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-
-import com.google.gson.Gson;
 
 public class CUS {
 
@@ -37,7 +34,7 @@ public class CUS {
     // ISTANZA GLOBALE DELLO STATO (Accessibile da HttpServerTask)
     public static SystemState state = new SystemState();
     
-    private static SerialComm serialComm;
+    protected static SerialComm serialComm;
     private static HttpServerTask httpTask;
 
     public static void main(String[] args) {
