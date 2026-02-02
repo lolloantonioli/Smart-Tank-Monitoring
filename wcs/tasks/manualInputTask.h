@@ -12,9 +12,11 @@ class ManualInputTask : public Task {
     Potentiometer* pot;
     Context* context;
     bool lastButtonState;
+    int lastPotVal;
   public:
     ManualInputTask(Button* btn, Potentiometer* p, Context* ctx);
     void tick();
 };
+
 
 #endif
