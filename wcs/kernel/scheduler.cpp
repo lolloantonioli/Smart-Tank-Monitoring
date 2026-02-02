@@ -1,5 +1,5 @@
 #include "scheduler.h"
-#include <TimerOne.h>
+#include <Arduino.h>
 
 volatile bool timerFlag;
 
@@ -11,9 +11,8 @@ void Scheduler::init(int basePeriod){
   this->basePeriod = basePeriod;
   timerFlag = false;
   long period = 1000l*basePeriod;
-  Timer1.initialize(period);
-  Timer1.attachInterrupt(timerHandler);
   nTasks = 0;
+  this->lastTime = millis();
 }
 
 bool Scheduler::addTask(Task* task){
@@ -27,9 +26,8 @@ bool Scheduler::addTask(Task* task){
 }
   
 void Scheduler::schedule(){   
-  while (!timerFlag){}
-  timerFlag = false;
-
+  if (millis() - lastTime >= basePeriod) {
+    lastTime += basePeriod;
   for (int i = 0; i < nTasks; i++){
     if (taskList[i]->isActive()){
       if (taskList[i]->isPeriodic()){
@@ -44,4 +42,7 @@ void Scheduler::schedule(){
       }
     }
   }
+  }
+
+
 }
