@@ -6,7 +6,7 @@
 #define MAX_TASKS 50
 
 class Scheduler {
-  
+  unsigned long lastTime;
   int basePeriod;
   int nTasks;
   Task* taskList[MAX_TASKS];  
@@ -16,5 +16,6 @@ public:
   virtual bool addTask(Task* task);  
   virtual void schedule();
 };
+
 
 #endif
