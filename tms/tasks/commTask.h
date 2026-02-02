@@ -16,9 +16,9 @@ class CommTask : public Task {
     WiFiClient espClient;
     PubSubClient client;
     
-    const char* ssid = "YOUR_SSID";
-    const char* password = "YOUR_PASS";
-    const char* mqtt_server = "BROKER_IP"; 
+    const char* ssid = "FASTWEB-ZCFLUU";
+    const char* password = "LC4KN4PZS5";
+    const char* mqtt_server = "broker.mqtt-dashboard.com"; 
     const char* topic = "tms/waterlevel";
 
     void checkConnection();

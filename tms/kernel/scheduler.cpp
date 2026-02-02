@@ -4,6 +4,7 @@
 void Scheduler::init(int basePeriod){
   this->basePeriod = basePeriod;
   nTasks = 0;
+  lastTime = millis();
 }
 
 bool Scheduler::addTask(Task* task){
@@ -17,9 +18,8 @@ bool Scheduler::addTask(Task* task){
 }
   
 void Scheduler::schedule(){     
-  static unsigned long lastTime = 0;
   if (millis() - lastTime >= basePeriod) {
-      lastTime = millis();
+      lastTime += basePeriod;
       
       for (int i = 0; i < nTasks; i++){
         if (taskList[i]->isActive()){

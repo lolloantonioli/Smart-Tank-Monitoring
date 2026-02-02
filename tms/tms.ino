@@ -1,17 +1,17 @@
-#include "tms/constants.h"
-#include "tms/kernel/scheduler.h"
+#include "constants.h"
+#include "kernel/scheduler.h"
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 
 // Devices
-#include "tms/devices/led.h"
-#include "tms/devices/sonar.h"
+#include "devices/led.h"
+#include "devices/sonar.h"
 
 // Tasks
-#include "tms/tasks/commTask.h"
-#include "tms/tasks/sonarTask.h"
-#include "tms/tasks/ledTask.h"
+#include "tasks/commTask.h"
+#include "tasks/sonarTask.h"
+#include "tasks/ledTask.h"
 
 // --- DATI CONDIVISI (Shared Memory) ---
 // volatile dice al compilatore: "Attenzione, questo valore può cambiare 

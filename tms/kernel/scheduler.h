@@ -9,6 +9,7 @@ class Scheduler {
   
   int basePeriod;
   int nTasks;
+  unsigned long lastTime;
   Task* taskList[MAX_TASKS];  
 
 public:
