@@ -8,6 +8,7 @@ bin/
 # Ignore Idea customizations
 .idea
 
+.class
 # Ignore Eclipse settings
 .project
 .settings/

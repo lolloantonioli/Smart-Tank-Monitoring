@@ -49,7 +49,7 @@ public class SerialComm {
 
     public void sendMode(String mode) {
         if (port != null && port.isOpen()) {
-            String cmd = (mode.equals("MANUAL")) ? "MOD:MANUAL\n" : "MOD:AUTO\n";
+            String cmd = (mode.equals("MANUAL")) ? "CMD:MANUAL\n" : "CMD:AUTO\n";
             port.writeBytes(cmd.getBytes(), cmd.length());
         }
     }
