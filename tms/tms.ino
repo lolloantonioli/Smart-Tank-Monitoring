@@ -14,14 +14,12 @@
 #include "tasks/ledTask.h"
 
 // --- DATI CONDIVISI (Shared Memory) ---
-// volatile dice al compilatore: "Attenzione, questo valore può cambiare 
-// improvvisamente (perché toccato dall'altro Core), rileggilo sempre dalla RAM!"
 QueueHandle_t distanceQueue;
 volatile TMSState systemState = NOT_WORKING;
 
 // --- Schedulers ---
-Scheduler* schedApp;  // Girerà sul Core 1 (Default Arduino)
-Scheduler* schedComm; // Girerà sul Core 0 (Radio/WiFi)
+Scheduler* schedApp;  
+Scheduler* schedComm; 
 
 // --- Hardware & Tasks ---
 Led *lGreen, *lRed;
@@ -36,7 +34,7 @@ void CommLoop(void * parameter) {
   schedComm = new Scheduler();
   schedComm->init(100); 
   
-  // Passiamo i puntatori alle variabili globali
+  // Puntatori alle variabili globali
   tComm = new CommTask(distanceQueue, &systemState);
   tComm->init(FREQUENCE);
   
@@ -44,7 +42,6 @@ void CommLoop(void * parameter) {
   
   for(;;) {
     schedComm->schedule();
-    // Un piccolo delay è essenziale nei task FreeRTOS per non bloccare il Watchdog
     vTaskDelay(10 / portTICK_PERIOD_MS); 
   }
 }
@@ -74,7 +71,6 @@ void setup() {
   schedApp->addTask(tLed);
 
   // 3. Avvio Task Comunicazione su Core 0
-  // Questo permette di usare i due core "in modo giusto" come richiesto
   xTaskCreatePinnedToCore(
     CommLoop,   // Funzione
     "CommTask", // Nome

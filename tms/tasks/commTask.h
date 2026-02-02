@@ -10,8 +10,8 @@
 
 class CommTask : public Task {
   private:
-    QueueHandle_t distanceQueue;  // Da leggere
-    volatile TMSState* stateRef;  // Da scrivere
+    QueueHandle_t distanceQueue;  
+    volatile TMSState* stateRef; 
     
     WiFiClient espClient;
     PubSubClient client;

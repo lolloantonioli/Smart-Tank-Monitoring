@@ -3,7 +3,7 @@
 CommTask::CommTask(QueueHandle_t q, volatile TMSState* s) 
     : distanceQueue(q), stateRef(s) {
     
-    // --- 1. AVVIO WIFI (Fallo solo qui nel costruttore!) ---
+    // --- 1. AVVIO WIFI ---
     Serial.println("--- CommTask Avviato ---");
     Serial.print("Connessione WiFi a: ");
     Serial.println(ssid);
@@ -18,19 +18,17 @@ CommTask::CommTask(QueueHandle_t q, volatile TMSState* s)
 void CommTask::checkConnection() {
     // --- 2. CONTROLLO WIFI ---
     if (WiFi.status() != WL_CONNECTED) {
-        // Stampiamo solo ogni tanto per non intasare la seriale
         static unsigned long lastPrint = 0;
         if (millis() - lastPrint > 1000) {
             lastPrint = millis();
             Serial.print("WiFi Status: ");
-            Serial.println(WiFi.status()); // 3 = WL_CONNECTED, 6 = DISCONNECTED
+            Serial.println(WiFi.status()); 
             Serial.println("WiFi: In attesa di connessione...");
         }
         *stateRef = NOT_WORKING; 
         
-        // NON chiamare WiFi.begin() qui! L'ESP32 si riconnette da solo.
     } else {
-        // --- 3. CONTROLLO MQTT (Solo se WiFi è OK) ---
+        // --- 3. CONTROLLO MQTT ---
         if (!client.connected()) {
             Serial.println("WiFi: OK -> Tento connessione MQTT...");
             
@@ -42,10 +40,9 @@ void CommTask::checkConnection() {
                 *stateRef = WORKING;
             } else {
                 Serial.print("MQTT Errore, rc=");
-                Serial.println(client.state()); // Codici errore MQTT (es. -2 = server non trovato)
+                Serial.println(client.state()); 
             }
         } else {
-            // Tutto connesso
             *stateRef = WORKING;
         }
     }
@@ -54,16 +51,13 @@ void CommTask::checkConnection() {
 void CommTask::tick() {
     checkConnection();
 
-    // Se siamo connessi, inviamo i dati
     if (*stateRef == WORKING) {
         client.loop(); 
         
         float level = 0.0;
         
-        // Usa xQueueReceive per togliere il dato dalla coda (evita spam)
         if (xQueueReceive(distanceQueue, &level, 0) == pdTRUE) {
             
-            // Formatta in JSON per il Java: {"level": 50.00}
             char msg[50];
             snprintf(msg, 50, "%.2f", level);
             
@@ -74,6 +68,5 @@ void CommTask::tick() {
         }
     }
     
-    // Piccolo delay per non bloccare il Watchdog (importante!)
     delay(10);
 }
