@@ -91,6 +91,17 @@
 
     const MAX_DATA_POINTS = 20;
     let isConnected = false;
+    
+    // --- NUOVO: Gestione trascinamento ---
+    let isDragging = false;
+    const valveSlider = document.getElementById('valve-slider');
+    
+    // Rileva se l'utente sta premendo il mouse/dito sullo slider
+    valveSlider.addEventListener('mousedown', () => isDragging = true);
+    valveSlider.addEventListener('mouseup', () => isDragging = false);
+    // Per touch screen
+    valveSlider.addEventListener('touchstart', () => isDragging = true);
+    valveSlider.addEventListener('touchend', () => isDragging = false);
 
     // --- LOOP PRINCIPALE ---
     async function fetchData() {
@@ -109,15 +120,19 @@
     }
 
     function updateUI(data) {
-        // 1. STATO (Usa "mode" invece di "state")
+
+        // 1. STATO
         setSystemState(data.mode);
 
-        // 2. VALVOLA (Usa "valveOpening" invece di "valve")
+        // 2. VALVOLA (MODIFICATO)
+        // Aggiorna sempre il testo
         document.getElementById('valve-value').innerText = data.valveOpening;
+        
         const slider = document.getElementById('valve-slider');
         
-        // Evita che lo slider salti mentre lo trascini
-        if(document.activeElement !== slider) {
+        // Aggiorna la posizione del cursore SOLO se l'utente NON sta trascinando.
+        // (Prima usavamo activeElement, ma quello blocca l'aggiornamento anche se hai solo cliccato)
+        if (!isDragging) {
             slider.value = data.valveOpening;
         }
 
