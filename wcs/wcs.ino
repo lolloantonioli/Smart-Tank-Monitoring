@@ -31,17 +31,9 @@ void setup() {
   scheduler->init(50); 
   context = new Context();
   btn = new Button(BUTTON_PIN);
-  btn->init();
-
   pot = new Potentiometer(POT_PIN);
-  pot->init();
-
   valve = new Valve(SERVO_PIN);
-  valve->init();
-
   lcd = new Display(0x27, 20, 4); 
-  lcd->init();
-  
   tManual = new ManualInputTask(btn, pot, context);
   tComm = new CommTask(context);
   tLogic = new LogicTask(context);

@@ -14,6 +14,6 @@ void DisplayTask::tick() {
         case UNCONNECTED: strState = "UNCONNECTED"; break;
         default: strState = "ERROR"; break;
     }
-
+    display->clear();
     display->showStatus(strState, level);
 }

@@ -104,8 +104,9 @@ public class CUS {
             if (!state.mode.equals("UNCONNECTED")) {
                 state.mode = "UNCONNECTED";
                 System.out.println("ALARM: Connection lost");
+                serialComm.sendMode("UNCONNECTED");
             }
-        } else if (state.mode.equals("UNCONNECTED")) state.mode = "AUTOMATIC";
+        } else if (state.mode.equals("UNCONNECTED")) state.mode = "UNCONNECTED";
 
         // Logic
         if (state.mode.equals("AUTOMATIC")) {
