@@ -4,24 +4,19 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 
-// Devices
 #include "devices/led.h"
 #include "devices/sonar.h"
 
-// Tasks
 #include "tasks/commTask.h"
 #include "tasks/sonarTask.h"
 #include "tasks/ledTask.h"
 
-// --- DATI CONDIVISI (Shared Memory) ---
 QueueHandle_t distanceQueue;
 volatile TMSState systemState = NOT_WORKING;
 
-// --- Schedulers ---
 Scheduler* schedApp;  
 Scheduler* schedComm; 
 
-// --- Hardware & Tasks ---
 Led *lGreen, *lRed;
 Sonar *sonar;
 
@@ -29,12 +24,10 @@ SonarTask* tSonar;
 CommTask* tComm;
 LedTask* tLed;
 
-// Loop dedicato al Core 0
 void CommLoop(void * parameter) {
   schedComm = new Scheduler();
   schedComm->init(100); 
   
-  // Puntatori alle variabili globali
   tComm = new CommTask(distanceQueue, &systemState);
   tComm->init(FREQUENCE);
   
@@ -50,27 +43,22 @@ void setup() {
   Serial.begin(115200);
   distanceQueue = xQueueCreate(1, sizeof(float));
 
-  // 1. Init Hardware
   lGreen = new Led(GREEN_LED_PIN);
-  lRed   = new Led(RED_LED_PIN);
-  sonar  = new Sonar(TRIG_PIN, ECHO_PIN);
+  lRed = new Led(RED_LED_PIN);
+  sonar = new Sonar(TRIG_PIN, ECHO_PIN);
 
-  // 2. Scheduler Applicativo (Core 1)
   schedApp = new Scheduler();
   schedApp->init(50);
 
-  // Il Sonar scrive nella variabile distance (puntatore)
   tSonar = new SonarTask(sonar, distanceQueue);
   tSonar->init(FREQUENCE); 
 
-  // Il LED legge la variabile isConnected (puntatore)
   tLed = new LedTask(lGreen, lRed, &systemState);
   tLed->init(100);
 
   schedApp->addTask(tSonar);
   schedApp->addTask(tLed);
 
-  // 3. Avvio Task Comunicazione su Core 0
   xTaskCreatePinnedToCore(
     CommLoop,   // Funzione
     "CommTask", // Nome
@@ -83,6 +71,5 @@ void setup() {
 }
 
 void loop() {
-  // Core 1 (App Loop)
   schedApp->schedule();
 }
