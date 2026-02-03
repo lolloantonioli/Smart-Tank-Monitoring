@@ -1,9 +1,6 @@
 #include "commTask.h"
 
-CommTask::CommTask(QueueHandle_t q, volatile TMSState* s) 
-    : distanceQueue(q), stateRef(s) {
-    
-    // --- 1. AVVIO WIFI ---
+CommTask::CommTask(QueueHandle_t q, volatile TMSState* s) : distanceQueue(q), stateRef(s) { 
     Serial.println("--- CommTask Avviato ---");
     Serial.print("Connessione WiFi a: ");
     Serial.println(ssid);
@@ -16,7 +13,6 @@ CommTask::CommTask(QueueHandle_t q, volatile TMSState* s)
 }
 
 void CommTask::checkConnection() {
-    // --- 2. CONTROLLO WIFI ---
     if (WiFi.status() != WL_CONNECTED) {
         static unsigned long lastPrint = 0;
         if (millis() - lastPrint > 1000) {
@@ -28,7 +24,6 @@ void CommTask::checkConnection() {
         *stateRef = NOT_WORKING; 
         
     } else {
-        // --- 3. CONTROLLO MQTT ---
         if (!client.connected()) {
             Serial.println("WiFi: OK -> Tento connessione MQTT...");
             
@@ -50,23 +45,16 @@ void CommTask::checkConnection() {
 
 void CommTask::tick() {
     checkConnection();
-
     if (*stateRef == WORKING) {
         client.loop(); 
-        
         float level = 0.0;
-        
         if (xQueueReceive(distanceQueue, &level, 0) == pdTRUE) {
-            
             char msg[50];
             snprintf(msg, 50, "%.2f", level);
-            
             Serial.print(">> INVIO MQTT: ");
             Serial.println(msg);
-            
             client.publish(topic, msg);
         }
     }
-    
     delay(10);
 }
