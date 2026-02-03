@@ -11,40 +11,44 @@ import java.util.Map;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpServer;
 
-public class HttpServerTask {
+public final class HttpServerTask {
 
-    // METODO CHE IL CUS CHIAMA
-    public void startServer(int port) throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
+    private static final int OK_CODE = 200;
+    private static final int NOT_FOUND_CODE = 404;
+    private static final int METHOD_NOT_ALLOWED_CODE = 405;
 
-        // GUI
+    public void startServer(final int port) throws IOException {
+        final HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
+
         server.createContext("/", exchange -> {
             if (!exchange.getRequestMethod().equalsIgnoreCase("GET")) {
-                exchange.sendResponseHeaders(405, -1); return;
+                exchange.sendResponseHeaders(METHOD_NOT_ALLOWED_CODE, -1); 
+                return;
             }
-            InputStream is = getClass().getClassLoader().getResourceAsStream("index.html");
-            if (is == null) {
-                File f = new File("src/main/resources/index.html");
-                if (f.exists()) is = new FileInputStream(f);
+            File f = new File("../dbs/index.html");
+            if (!f.exists()) {
+                f = new File("dbs/index.html");
             }
-            if (is != null) {
-                byte[] bytes = is.readAllBytes();
-                exchange.sendResponseHeaders(200, bytes.length);
+            if (f.exists()) {
+                final InputStream is = new FileInputStream(f);
+                final byte[] bytes = is.readAllBytes();
+                exchange.sendResponseHeaders(OK_CODE, bytes.length);
                 exchange.getResponseBody().write(bytes);
                 is.close();
             } else {
-                String r = "Not Found";
-                exchange.sendResponseHeaders(404, r.length());
+                System.err.println("ERRORE: Dashboard non trovata in " + f.getAbsolutePath());
+                final String r = "404 - Dashboard Not Found (Check 'dbs' folder)";
+                exchange.sendResponseHeaders(NOT_FOUND_CODE, r.length());
                 exchange.getResponseBody().write(r.getBytes());
             }
             exchange.close();
         });
 
-        // API DATA (Usa CUS.state)
+        // API DATA
         server.createContext("/api/data", exchange -> {
-            String json = new Gson().toJson(CUS.state);
+            final String json = new Gson().toJson(CUS.state);
             exchange.getResponseHeaders().add("Content-Type", "application/json");
-            exchange.sendResponseHeaders(200, json.length());
+            exchange.sendResponseHeaders(OK_CODE, json.length());
             exchange.getResponseBody().write(json.getBytes());
             exchange.close();
         });
@@ -59,7 +63,7 @@ public class HttpServerTask {
                     CUS.state.mode = "AUTOMATIC";
                     CUS.serialComm.sendMode("AUTOMATIC");
                 }
-                exchange.sendResponseHeaders(200, 0);
+                exchange.sendResponseHeaders(OK_CODE, 0);
             }
             exchange.close();
         });
@@ -67,13 +71,15 @@ public class HttpServerTask {
         // API VALVE
         server.createContext("/api/valve", exchange -> {
             if ("POST".equalsIgnoreCase(exchange.getRequestMethod()) && CUS.state.mode.equals("MANUAL")) {
-                InputStreamReader isr = new InputStreamReader(exchange.getRequestBody());
-                Map body = new Gson().fromJson(isr, Map.class);
+                final InputStreamReader isr = new InputStreamReader(exchange.getRequestBody());
+                final Map body = new Gson().fromJson(isr, Map.class);
                 if (body != null && body.containsKey("valve")) {
-                    Object val = body.get("valve");
-                    if (val instanceof Number) CUS.state.valveOpening = ((Number) val).intValue();
+                    final Object val = body.get("valve");
+                    if (val instanceof Number) {
+                        CUS.state.valveOpening = ((Number) val).intValue();
+                    }
                 }
-                exchange.sendResponseHeaders(200, 0);
+                exchange.sendResponseHeaders(OK_CODE, 0);
             }
             exchange.close();
         });

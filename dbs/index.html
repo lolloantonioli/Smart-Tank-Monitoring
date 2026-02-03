@@ -1,55 +1,33 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Tank Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <style>
-        body { background-color: #f8f9fa; }
-        .card { margin-bottom: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border: none; }
-        .card-header { font-weight: bold; }
-        
-        /* Badge stati */
-        .status-badge { 
-            font-size: 1.5em; padding: 15px; border-radius: 8px; 
-            color: white; text-align: center; font-weight: bold; 
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-        .bg-auto { background-color: #28a745; box-shadow: 0 0 10px #28a745; }
-        .bg-manual { background-color: #ffc107; color: #333; box-shadow: 0 0 10px #ffc107; }
-        .bg-unconnected { background-color: #dc3545; animation: pulse 2s infinite; }
+        body { background-color: #f4f6f9; }
+        .card { margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .status-badge { font-size: 1.2em; padding: 10px; border-radius: 5px; color: white; display: block; text-align: center; font-weight: bold;}
+        .bg-auto { background-color: #28a745; }
+        .bg-manual { background-color: #ffc107; color: black; }
+        .bg-alarm { background-color: #dc3545; }
+        .bg-unconnected { background-color: #6c757d; }
         .bg-not-avail { background-color: #343a40; }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.6; }
-            100% { opacity: 1; }
-        }
-
-        /* Slider personalizzato */
-        input[type=range] { height: 30px; }
-        input[type=range]:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
-<div class="container py-4">
-    <div class="text-center mb-5">
-        <h1>💧 Smart Tank Monitoring</h1>
-        <p class="text-muted">Assignment #03 - Dashboard Subsystem</p>
-    </div>
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Smart Tank Monitor</h1>
 
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="text-center text-muted mb-3">Stato Attuale del Sistema</h5>
-                    <div id="system-state-badge" class="status-badge bg-not-avail">
-                        CONNESSIONE IN CORSO...
-                    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card p-3">
+                <h4 class="text-center">Stato del Sistema</h4>
+                <div id="system-state-badge" class="status-badge bg-not-avail">
+                    ATTESA DATI...
                 </div>
             </div>
         </div>
@@ -57,46 +35,31 @@
 
     <div class="row">
         <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-header bg-primary text-white">
-                    ⚙️ Control Unit (WCS)
-                </div>
-                <div class="card-body d-flex flex-column justify-content-between">
-                    
+            <div class="card">
+                <div class="card-header bg-primary text-white">Controlli (WCS)</div>
+                <div class="card-body">
                     <div class="mb-4 text-center">
-                        <label class="form-label text-muted">Modalità Operativa</label>
-                        <button id="btn-switch-mode" class="btn btn-outline-secondary w-100 py-2 fw-bold" onclick="toggleMode()">
-                            ...
+                        <h5>Modalità</h5>
+                        <button id="btn-switch-mode" class="btn btn-outline-primary w-100" onclick="toggleMode()">
+                            Passa a MANUAL
                         </button>
                     </div>
-
                     <hr>
-
-                    <div class="mb-2 text-center">
-                        <label class="form-label text-muted">Apertura Valvola</label>
-                        <h1 class="display-4 text-primary fw-bold mb-0">
-                            <span id="valve-value">0</span><span style="font-size: 0.5em">%</span>
-                        </h1>
-                        
-                        <div class="mt-3">
-                            <input type="range" class="form-range" id="valve-slider" min="0" max="100" step="5" disabled 
-                                   onchange="updateValve(this.value)" oninput="document.getElementById('valve-value').innerText = this.value">
-                            <small id="slider-help" class="text-muted d-block mt-2">
-                                Abilita MANUAL per controllare
-                            </small>
-                        </div>
+                    <div class="mb-2">
+                        <h5>Apertura Valvola</h5>
+                        <h2 class="text-center text-primary"><span id="valve-value">0</span>%</h2>
+                        <input type="range" class="form-range" id="valve-slider" min="0" max="100" disabled onchange="updateValve(this.value)">
+                        <small class="text-muted">Slider attivo solo in MANUAL</small>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-md-8">
-            <div class="card h-100">
-                <div class="card-header bg-info text-white">
-                    🌊 Livello Acqua (TMS)
-                </div>
+            <div class="card">
+                <div class="card-header bg-info text-white">Livello Acqua (TMS)</div>
                 <div class="card-body">
-                    <canvas id="levelChart" style="max-height: 400px;"></canvas>
+                    <canvas id="levelChart"></canvas>
                 </div>
             </div>
         </div>
@@ -104,175 +67,122 @@
 </div>
 
 <script>
-    // --- CONFIGURAZIONE ---
-    // Soglie visuali (devono matchare quelle in CUS.java)
-    const LEVEL_L1 = 60.0;
-    const LEVEL_L2 = 85.0;
-    const MAX_HISTORY = 30; // Numero di punti nel grafico
-
-    // --- CHART.JS SETUP ---
     const ctx = document.getElementById('levelChart').getContext('2d');
-    
-    // Plugin per disegnare le linee di soglia L1 e L2
-    const thresholdLines = {
-        id: 'thresholdLines',
-        beforeDraw: (chart) => {
-            const { ctx, chartArea: { top, bottom, left, right }, scales: { y } } = chart;
-            const drawLine = (value, color, label) => {
-                const yPos = y.getPixelForValue(value);
-                ctx.save();
-                ctx.beginPath();
-                ctx.strokeStyle = color;
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]);
-                ctx.moveTo(left, yPos);
-                ctx.lineTo(right, yPos);
-                ctx.stroke();
-                ctx.fillStyle = color;
-                ctx.fillText(label, right - 30, yPos - 5);
-                ctx.restore();
-            };
-            drawLine(LEVEL_L1, '#ffc107', 'L1 (Alert)');
-            drawLine(LEVEL_L2, '#dc3545', 'L2 (Alarm)');
-        }
-    };
-
     const levelChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: [], 
             datasets: [{
-                label: 'Livello (cm)',
+                label: 'Livello Acqua (cm)',
                 data: [],
                 borderColor: 'rgba(54, 162, 235, 1)',
-                backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                borderWidth: 3,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderWidth: 2,
                 fill: true,
-                tension: 0.4,
-                pointRadius: 2
+                tension: 0.3
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: { 
-                y: { 
-                    beginAtZero: true, 
-                    suggestedMax: 100,
-                    title: { display: true, text: 'Centimetri' }
-                },
-                x: { display: false } // Nascondiamo le label temporali per pulizia
-            },
-            animation: false, // Disabilita animazioni per performance real-time
-            plugins: { legend: { display: false } }
-        },
-        plugins: [thresholdLines]
+            scales: { y: { beginAtZero: true, max: 100 } },
+            animation: false
+        }
     });
 
-    // --- LOGICA APPLICAZIONE ---
-    const badge = document.getElementById('system-state-badge');
-    const btnMode = document.getElementById('btn-switch-mode');
-    const slider = document.getElementById('valve-slider');
-    const valveLabel = document.getElementById('valve-value');
-    const sliderHelp = document.getElementById('slider-help');
+    const MAX_DATA_POINTS = 20;
+    let isConnected = false;
+    
+    let isDragging = false;
+    const valveSlider = document.getElementById('valve-slider');
+    
+    valveSlider.addEventListener('mousedown', () => isDragging = true);
+    valveSlider.addEventListener('mouseup', () => isDragging = false);
+    valveSlider.addEventListener('touchstart', () => isDragging = true);
+    valveSlider.addEventListener('touchend', () => isDragging = false);
 
-    // Funzione principale di aggiornamento (Polling ogni 500ms)
     async function fetchData() {
         try {
             const response = await fetch('/api/data');
-            if (!response.ok) throw new Error("API Error");
+            if (!response.ok) {
+                throw new Error("Server Error");   
+            }
             
             const data = await response.json();
-            updateInterface(data);
+            isConnected = true;
+            updateUI(data);
         } catch (error) {
-            setUnavailable();
+            console.error("Connection lost", error);
+            isConnected = false;
+            setSystemState("NOT AVAILABLE");
         }
     }
 
-    function updateInterface(data) {
-        // 1. Stato Sistema
-        let mode = data.mode || "NOT AVAILABLE";
+    function updateUI(data) {
+        setSystemState(data.mode);
+        document.getElementById('valve-value').innerText = data.valveOpening;
+        const slider = document.getElementById('valve-slider');
+        if (!isDragging) {
+            slider.value = data.valveOpening;
+        }
+        const btn = document.getElementById('btn-switch-mode');
+        if (data.mode === 'MANUAL') {
+            slider.disabled = false;
+            btn.innerText = "Passa a AUTOMATIC";
+            btn.className = "btn btn-warning w-100";
+        } else {
+            slider.disabled = true;
+            btn.innerText = "Passa a MANUAL";
+            btn.className = "btn btn-outline-primary w-100";
+        }
+
+        addDataToChart(new Date().toLocaleTimeString(), data.currentLevel);
+    }
+
+    function setSystemState(mode) {
+        const badge = document.getElementById('system-state-badge');
+        if (!mode) {
+            mode = "NOT AVAILABLE";
+        }
         badge.innerText = mode;
-        badge.className = "status-badge"; // Reset classi
-        
+        badge.className = "status-badge"; 
+
         if (mode === 'AUTOMATIC') {
             badge.classList.add('bg-auto');
-            btnMode.innerText = "Passa a MANUAL";
-            btnMode.className = "btn btn-outline-warning w-100 py-2 fw-bold";
-            disableControls(true);
         } else if (mode === 'MANUAL') {
             badge.classList.add('bg-manual');
-            btnMode.innerText = "Passa a AUTOMATIC";
-            btnMode.className = "btn btn-outline-success w-100 py-2 fw-bold";
-            disableControls(false);
         } else if (mode === 'UNCONNECTED') {
             badge.classList.add('bg-unconnected');
-            badge.innerText = "⚠️ UNCONNECTED (TMS LOST)";
-            disableControls(true);
         } else {
-            setUnavailable();
-            return;
+            badge.classList.add('bg-not-avail');
         }
+    }
 
-        // 2. Valvola (Aggiorna solo se l'utente non sta trascinando lo slider)
-        // 'mode === MANUAL' è l'unico caso in cui l'utente comanda.
-        // Se è AUTOMATIC, aggiorniamo sempre visualmente.
-        if (document.activeElement !== slider) {
-            slider.value = data.valveOpening;
-            valveLabel.innerText = data.valveOpening;
-        }
-
-        // 3. Grafico
-        const now = new Date().toLocaleTimeString();
-        levelChart.data.labels.push(now);
-        levelChart.data.datasets[0].data.push(data.currentLevel);
-
-        // Mantieni storico limitato
-        if (levelChart.data.labels.length > MAX_HISTORY) {
+    function addDataToChart(label, val) {
+        levelChart.data.labels.push(label);
+        levelChart.data.datasets[0].data.push(val);
+        if (levelChart.data.labels.length > MAX_DATA_POINTS) {
             levelChart.data.labels.shift();
             levelChart.data.datasets[0].data.shift();
         }
         levelChart.update();
     }
 
-    function setUnavailable() {
-        badge.innerText = "NOT AVAILABLE (CUS OFF)";
-        badge.className = "status-badge bg-not-avail";
-        disableControls(true);
-    }
-
-    function disableControls(disabled) {
-        slider.disabled = disabled;
-        if(disabled) {
-            sliderHelp.innerText = "Abilita MANUAL per controllare";
-            sliderHelp.className = "text-muted d-block mt-2";
-        } else {
-            sliderHelp.innerText = "Trascina per regolare l'apertura";
-            sliderHelp.className = "text-success fw-bold d-block mt-2";
-        }
-    }
-
-    // --- AZIONI (API CALLS) ---
     async function toggleMode() {
-        try { await fetch('/api/mode', { method: 'POST' }); } 
-        catch (e) { console.error(e); }
+        await fetch('/api/mode', {
+            method: 'POST' 
+        });
     }
 
     async function updateValve(val) {
-        try {
-            await fetch('/api/valve', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ valve: parseInt(val) })
-            });
-            valveLabel.innerText = val;
-        } catch (e) { console.error(e); }
+        await fetch('/api/valve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ valve: parseInt(val) })
+        });
+        document.getElementById('valve-value').innerText = val;
     }
 
-    // Avvio loop
     setInterval(fetchData, 500);
-    fetchData(); // Prima chiamata immediata
-
 </script>
+
 </body>
 </html>
