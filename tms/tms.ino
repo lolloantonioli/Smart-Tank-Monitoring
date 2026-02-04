@@ -48,7 +48,7 @@ void setup() {
   sonar = new Sonar(TRIG_PIN, ECHO_PIN);
 
   schedApp = new Scheduler();
-  schedApp->init(50);
+  schedApp->init(100);
 
   tSonar = new SonarTask(sonar, distanceQueue);
   tSonar->init(FREQUENCE); 
@@ -73,3 +73,4 @@ void setup() {
 void loop() {
   schedApp->schedule();
 }
+
